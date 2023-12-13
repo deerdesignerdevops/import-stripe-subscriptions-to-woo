@@ -172,8 +172,8 @@ function createSubscriptionsInDatabase(){
 
     $woocommerce = new Client(
         $siteUrl,
-        'ck_7541a89ca4c8ac5ee7fbfe27e27515f1fd51c6b2',
-        'cs_f76165184adc5c2a846f8bbe9a2d527b1ac2190e',
+        WOO_CONSUMER_KEY,
+        WOO_CONSUMER_SECRET,
         [
             'version' => 'wc/v3',
         ]
@@ -285,8 +285,8 @@ function eraseAllSubscriptionsImported(){
 
     $woocommerce = new Client(
         $siteUrl,
-        'ck_7541a89ca4c8ac5ee7fbfe27e27515f1fd51c6b2',
-        'cs_f76165184adc5c2a846f8bbe9a2d527b1ac2190e',
+        WOO_CONSUMER_KEY,
+        WOO_CONSUMER_SECRET,
         [
             'version' => 'wc/v3',
         ]
