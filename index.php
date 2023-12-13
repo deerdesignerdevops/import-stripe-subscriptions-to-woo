@@ -100,23 +100,26 @@ function importStripePluginPage() {
     if (isset($_POST['submit'])) {
         $stripe_api = $_POST['stripe_api'];
         $stripe = new \Stripe\StripeClient($stripe_api);
-        $limit = 1;
+        $limit = 20;
         $subscriptions = $stripe->subscriptions->all(['status' => 'active', 'limit' => $limit]); 
         $allSubscriptions = [$subscriptions];
 
-        $count = 1;
+
+
+        $count = 0;
 
         //print_r(sizeof($subscriptions->data));
 
-        while($count < 10){
-           echo  $count = $count + sizeof($subscriptions->data);
+        // while(sizeof($subscriptions->data)){
+        //    echo  $count = $count + sizeof($subscriptions->data);
 
-            $starting_after = end($subscriptions->data)->id;
-            $subscriptions = $stripe->subscriptions->all(['status' => 'active', 'limit' => $limit, 'starting_after' => $starting_after]); 
-            array_push($allSubscriptions, $subscriptions);
-            file_put_contents(__DIR__ . "/temp/subscriptions.json", json_encode($allSubscriptions));
-        }
+        //     $starting_after = end($subscriptions->data)->id;
+        //     $subscriptions = $stripe->subscriptions->all(['status' => 'active', 'limit' => $limit, 'starting_after' => $starting_after]); 
+        //     array_push($allSubscriptions, $subscriptions);
+        //     file_put_contents(__DIR__ . "/temp/subscriptions.json", json_encode($allSubscriptions));
+        // }
 
+        file_put_contents(__DIR__ . "/temp/subscriptions.json", json_encode($allSubscriptions));
         update_option('stripe_api', $stripe_api);
        
         ?>  
@@ -128,12 +131,14 @@ function importStripePluginPage() {
                     <span>Customer ID</span>
                     <span>Email</span>
                     <span>Product</span>
+                    <span>Stripe Source ID</span>
             </div>         
                 <?php
 
                 echo "TOTAL SUBSCRIPTIONS: $count <br><br>";
 
                 foreach($allSubscriptions as $subscription_array){
+                    
                     foreach($subscription_array as $subscription){
                     $customer = $stripe->customers->retrieve($subscription->customer,[]);
                     $product = $subscription->items->data[0]->plan->product;
@@ -143,7 +148,8 @@ function importStripePluginPage() {
                         <div class="data__group_content">
                             <span><?php echo $subscription->customer; ?></span>
                             <span><?php echo $customer->email; ?></span>
-                            <span><?php echo $product?> </span>
+                            <span><?php echo $product;?> </span>
+                            <span><?php echo $customer->invoice_settings->default_payment_method;?> </span>
                         </div>
                     <?php                         
                 } 
@@ -198,7 +204,7 @@ function createSubscriptionsInDatabase(){
                 $start_date = date('Y-m-d H:i:s', $subscription->start_date);
                 $next_payment_date = date('Y-m-d H:i:s', $subscription->current_period_end);
                 $stripe_customer_id = $subscription->customer;
-                $stripe_source_id = $subscription->default_payment_method;
+                $stripe_source_id = $customer->invoice_settings->default_payment_method;
                 $quantity = $subscription->items->data[0]->quantity;
 
                 $product = $subscription->items->data[0]->plan->product;
@@ -207,17 +213,45 @@ function createSubscriptionsInDatabase(){
                 $variation_id = "";
                 $currency = "USD";
 
-                if($product === 'prod_ObCH3y4VVsCIkz' || $product === 'prod_ObCF3X7N8waBD2'){
-                    $product_id = 939;
-                    $variation_id = $interval === 'year' ? 946 : 945;
+                //STANDARD
+                if($product === 'prod_Otk6tNpBaFEvbI' || $product === 'prod_OTBQozjkjXeQRR'){
+                    $product_id = 1580;
+                    $variation_id = $interval === 'year' ? 1596 : 1589;
+
+                //STANDARD GBP
+                }elseif($product === 'prod_OyByOYZukt2ViG'){
+                    $product_id = 1580;
+                    $variation_id = $interval === 'year' ? 1596 : 1589; 
+                    $currency = 'GBP';
+
+                //BUSINESS
+                }elseif($product === 'prod_Otk4nO3qlWbSs6' || $product === 'prod_P6Jo884N5giGpG' || $product === 'prod_OTBO873cqj2Wg5' || $product === 'prod_OTBPV7p4PFQA7c'){
+                    $product_id = 1590;
+                    $variation_id = $interval === 'year' ? 1592 : 1591;
+
+                //BUSINESS 2X
                 }elseif($product === 'prod_Oa7RNZdnzAp6Fx'){
-                    $product_id = 933;
+                    $product_id = 1590;
+                    $variation_id = $interval === 'year' ? 1592 : 1591;
                     $quantity = 2;
-                    $variation_id = $interval === 'year' ? 935 : 934;
+                
+                //BUSINESS GBP
+                }elseif($product === 'prod_OTBRTR9E1UB7A9' || $product === 'prod_OyC0RuvjirkRri'){
+                    $product_id = 1590;
+                    $variation_id = $interval === 'year' ? 1592 : 1591;
+                    $currency = 'GBP';
                 }
-                elseif($product === 'prod_OTBRTR9E1UB7A9' || $product === 'prod_OTBPV7p4PFQA7c' || $product === 'prod_OTBO873cqj2Wg5'){
-                    $product_id = 933;
-                    $variation_id = $interval === 'year' ? 935 : 934;
+
+                //AGENCY
+                elseif($product === 'prod_Otk8urLtkWsOI2'){
+                    $product_id = 1593;
+                    $variation_id = $interval === 'year' ? 1594 : 1595;
+
+                //AGENCY GBP
+                }elseif($product === 'prod_OyBlQMOUlVyUfC'){
+                    $product_id = 1593;
+                    $variation_id = $interval === 'year' ? 1594 : 1595;
+                    $currency = 'GBP';
                 }
                 else{
                     $product_id = 927;
